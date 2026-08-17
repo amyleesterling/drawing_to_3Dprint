@@ -1,0 +1,58 @@
+schema_version: 1
+default_model: triposg-scribble
+
+models:
+  triposg-scribble:
+    upstream: https://github.com/VAST-AI-Research/TripoSG
+    modality: scribble+text-to-mesh
+    output: glb
+    license: MIT
+    min_vram_gb: 8
+    tier: default
+    bundled: false
+
+  pixal3d:
+    upstream: https://github.com/TencentARC/Pixal3D
+    modality: image-to-pbr-mesh
+    output: glb
+    license: MIT
+    min_vram_gb: 24
+    tier: high-fidelity
+    bundled: false
+
+  step1x-3d:
+    upstream: https://github.com/stepfun-ai/Step1X-3D
+    modality: image-to-watertight-tsdf
+    output: glb
+    license: Apache-2.0
+    min_vram_gb: 27
+    tier: print-first
+    bundled: false
+
+  trellis-2:
+    upstream: https://github.com/microsoft/TRELLIS.2
+    modality: image-to-pbr-mesh
+    output: glb
+    license: MIT
+    min_vram_gb: 24
+    tier: quality
+    bundled: false
+
+  direct3d-s2:
+    upstream: https://github.com/DreamTechAI/Direct3D-S2
+    modality: image-to-sdf-mesh
+    output: obj
+    license: MIT
+    min_vram_gb: 10
+    recommended_vram_gb: 24
+    tier: geometry
+    bundled: false
+
+  triposr:
+    upstream: https://github.com/VAST-AI-Research/TripoSR
+    modality: image-to-mesh
+    output: obj
+    license: MIT
+    min_vram_gb: 6
+    tier: smoke-test
+    bundled: false
