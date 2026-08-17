@@ -17,21 +17,21 @@ repair and validation stages. AI output is evidence, not a manufacturing file.
 
 ```text
 source drawing + intent spec
-          |\nv
+          v
 crop / segment / normalize
-          |\nv
+          v
 parametric generator OR model adapter
-          |\nv
+          v
 Trimesh normalize + inspect
-          |\nv
+          v
 Manifold union / thickness operations
-          |\nv
+          v
 optional Blender voxel-remesh fallback
-          |\nv
+          v
 validation report
-          |\nv
+          v
 3MF master + GLB preview + STL compatibility
-          |\nv
+          v
 PrusaSlicer CLI acceptance test
 ```
 
