@@ -1,0 +1,25 @@
+# Generated artifacts and model weights
+artifacts/
+weights/
+checkpoints/
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# JavaScript
+node_modules/
+dist/
+.next/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+.DS_Store
