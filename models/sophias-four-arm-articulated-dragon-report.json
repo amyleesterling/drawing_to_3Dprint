@@ -3,7 +3,13 @@
   "speciesContract": {
     "connectedHeadJoint": true,
     "arms": 4,
-    "longNeckSegments": 10
+    "longNeckSegments": 10,
+    "faceSignature": [
+      "open oval eye",
+      "chunky wink",
+      "rounded muzzle loop",
+      "dangling nose nub"
+    ]
   },
   "params": {
     "size": 140,
@@ -12,15 +18,20 @@
     "clearance": 0.35,
     "pinDiameter": 2.6
   },
+  "surfaceDetailMm": {
+    "bodyRidge": 0.84,
+    "faceRelief": 1.87
+  },
   "printablePieces": 25,
-  "meshShells": 58,
-  "vertices": 29828,
-  "triangles": 11236,
+  "meshShells": 69,
+  "vertices": 41388,
+  "triangles": 14876,
   "boundaryEdges": 0,
+  "overlappingPartPairs": 0,
   "printBedLayoutMm": [
     211.67,
-    198.21,
+    194.52,
     17.09
   ],
-  "stlBytes": 561884
+  "stlBytes": 743884
 }

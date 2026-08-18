@@ -21,10 +21,18 @@ Default dimensions at the 140 mm preset:
 | Peg diameter | 2.6 mm |
 | Radial clearance | 0.35 mm |
 | Arms | 4 |
+| Body ridge relief | 0.84 mm |
+| Maximum face relief | 1.87 mm |
 
 The exporter lays the body plates, head, four arms, and pegs flat on a virtual
 212 mm-wide layout before producing the binary STL, leaving margins on a common
-220 mm bed. The SVG and JSON exports share the
+220 mm bed. Central relief stays clear of every joint hole and hinge sweep. The
+head relief preserves Sophia's open oval eye, chunky wink, rounded muzzle loop,
+and dangling nose nub as distinct printable height levels.
+
+The offline generator audits the bytes it writes: the binary triangle count,
+zero open boundary edges, and exported XYZ bounds must all agree with the scene
+before the STL is published. The SVG and JSON exports share the
 same rig, so the sketch, preview, and print kit cannot quietly disagree about
 the creature's anatomy.
 

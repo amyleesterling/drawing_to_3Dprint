@@ -24,6 +24,29 @@ export function addCircularHole(shape, x, y, radius) {
   shape.holes.push(hole);
 }
 
+function ovalShape(x, y, radiusX, radiusY) {
+  const shape = new THREE.Shape();
+  shape.absellipse(x, y, radiusX, radiusY, 0, Math.PI * 2, false);
+  shape.closePath();
+  return shape;
+}
+
+function ovalRingShape(x, y, radiusX, radiusY, ringWidth) {
+  const shape = ovalShape(x, y, radiusX, radiusY);
+  const hole = new THREE.Path();
+  hole.absellipse(
+    x,
+    y,
+    Math.max(.45, radiusX - ringWidth),
+    Math.max(.45, radiusY - ringWidth),
+    0,
+    Math.PI * 2,
+    true,
+  );
+  shape.holes.push(hole);
+  return shape;
+}
+
 export function extrudeShape(shape, depth, material, bevel = .45) {
   const geometry = new THREE.ExtrudeGeometry(shape, {
     depth,
@@ -47,6 +70,20 @@ export function makeLinkPart(length, radiusStart, radiusEnd, depth, holeRadius, 
   if (startHole) addCircularHole(shape, 0, 0, holeRadius);
   if (endHole) addCircularHole(shape, length, 0, holeRadius);
   group.add(extrudeShape(shape, depth, material));
+  const ridge = extrudeShape(
+    ovalShape(
+      length * .5,
+      0,
+      Math.max(2.2, length * .24),
+      Math.max(2.4, Math.min(radiusStart, radiusEnd) * .42),
+    ),
+    Math.max(.8, depth * .3),
+    material,
+    .24,
+  );
+  ridge.position.z = depth - .12;
+  ridge.userData.surfaceRelief = true;
+  group.add(ridge);
   return group;
 }
 
@@ -78,55 +115,100 @@ export function disk(radius, depth, material, segments = 22) {
   return mesh;
 }
 
-export function makeHeadPart(length, depth, holeRadius, size, material, crownMaterial) {
-  const group = makeLinkPart(length, Math.max(7.2, size * .45), size, depth, holeRadius, true, false, material);
-  const white = new THREE.MeshStandardMaterial({ color: "#fff6df", roughness: .75 });
+export function makeHeadPart(length, depth, holeRadius, size, material, _crownMaterial) {
+  const group = new THREE.Group();
+  const jointRadius = Math.max(7.2, size * .45);
+  const headShape = new THREE.Shape();
+  headShape.moveTo(0, jointRadius);
+  headShape.absarc(0, 0, jointRadius, Math.PI / 2, Math.PI * 1.5, false);
+  headShape.bezierCurveTo(
+    length * .42, -size * .5,
+    length + size * .1, -size * .86,
+    length + size * .5, -size * .62,
+  );
+  headShape.bezierCurveTo(
+    length + size * .8, -size * .42,
+    length + size * .92, -size * .14,
+    length + size * .84, size * .16,
+  );
+  headShape.bezierCurveTo(
+    length + size * .74, size * .52,
+    length + size * .26, size * .93,
+    length - size * .05, size * .76,
+  );
+  headShape.bezierCurveTo(
+    length * .48, size * .61,
+    length * .25, size * .49,
+    0, jointRadius,
+  );
+  headShape.closePath();
+  addCircularHole(headShape, 0, 0, holeRadius);
+  group.add(extrudeShape(headShape, depth, material, .48));
+
+  const facePlateHeight = Math.max(1, depth * .33);
+  const facePlate = extrudeShape(
+    ovalShape(length + size * .22, 0, size * .52, size * .62),
+    facePlateHeight,
+    material,
+    .34,
+  );
+  facePlate.position.z = depth - .16;
+  facePlate.userData.surfaceRelief = true;
+  group.add(facePlate);
+
+  const cream = new THREE.MeshStandardMaterial({ color: "#fff6df", roughness: .75 });
   const dark = new THREE.MeshStandardMaterial({ color: "#17201c", roughness: .7 });
   const cheek = new THREE.MeshStandardMaterial({ color: "#f0c95b", roughness: .7 });
-  const eyeOffset = Math.max(5, size * .34);
-  [-eyeOffset, eyeOffset].forEach((y, index) => {
-    const eye = disk(size * .25, .85, white);
-    eye.scale.set(1.15, 1, .82);
-    eye.position.set(length + size * .03, y, depth + .25);
-    group.add(eye);
-    const pupil = disk(size * .105, .92, dark);
-    pupil.position.set(length + size * .08, y + (index ? -.25 : .25), depth + .73);
-    group.add(pupil);
-  });
-  const nose = disk(size * .12, .82, cheek);
-  nose.scale.set(1.25, 1, .82);
-  nose.position.set(length + size * .56, 0, depth + .45);
-  group.add(nose);
-  const smile = new THREE.Shape();
-  const smilePoints = [];
-  const smileHalfHeight = size * .31;
-  const smileArch = size * .27;
-  const smileThickness = Math.max(.7, size * .042);
-  for (let index = 0; index <= 12; index++) {
-    const y = THREE.MathUtils.lerp(-smileHalfHeight, smileHalfHeight, index / 12);
-    const normalized = y / smileHalfHeight;
-    const x = length + size * .38 + smileArch * (1 - normalized * normalized);
-    smilePoints.push(new THREE.Vector2(x + smileThickness / 2, y));
-  }
-  for (let index = 12; index >= 0; index--) {
-    const y = THREE.MathUtils.lerp(-smileHalfHeight, smileHalfHeight, index / 12);
-    const normalized = y / smileHalfHeight;
-    const x = length + size * .38 + smileArch * (1 - normalized * normalized);
-    smilePoints.push(new THREE.Vector2(x - smileThickness / 2, y));
-  }
-  smile.moveTo(smilePoints[0].x, smilePoints[0].y);
-  smilePoints.slice(1).forEach((point) => smile.lineTo(point.x, point.y));
-  smile.closePath();
-  const smileMesh = extrudeShape(smile, .9, dark, .12);
-  smileMesh.position.z = depth - .18;
-  group.add(smileMesh);
-  [-.42, 0, .42].forEach((factor, index) => {
-    const crown = makeHandPart(depth * .72, crownMaterial);
-    crown.scale.set(.34, .34, .7);
-    crown.rotation.z = Math.PI / 2 + factor * .65;
-    crown.position.set(length - size * .25, factor * size * 1.04, depth * .22 + index * .04);
-    group.add(crown);
-  });
+  const detailBaseZ = depth + facePlateHeight - .34;
+
+  // Sophie's drawing has one big open oval eye and one deliciously chunky wink.
+  const openEye = extrudeShape(
+    ovalRingShape(length + size * .04, size * .35, size * .2, size * .28, Math.max(1.05, size * .065)),
+    1.15,
+    dark,
+    .16,
+  );
+  openEye.position.z = detailBaseZ;
+  group.add(openEye);
+  const eyeGlow = extrudeShape(
+    ovalShape(length + size * .04, size * .35, size * .105, size * .16),
+    .42,
+    cream,
+    .1,
+  );
+  eyeGlow.position.z = detailBaseZ - .12;
+  group.add(eyeGlow);
+
+  const winkLength = size * .38;
+  const wink = extrudeShape(
+    taperedShape(winkLength, size * .075, size * .075),
+    1.12,
+    dark,
+    .18,
+  );
+  wink.position.set(length - winkLength * .5 + size * .04, -size * .36, detailBaseZ);
+  wink.rotation.z = -.08;
+  group.add(wink);
+
+  // The rounded muzzle loop and tiny dangling nub are copied from the drawing,
+  // not replaced with a generic emoji smile.
+  const muzzle = extrudeShape(
+    ovalRingShape(length + size * .47, 0, size * .28, size * .33, Math.max(1.05, size * .064)),
+    .9,
+    cheek,
+    .16,
+  );
+  muzzle.position.z = detailBaseZ - .04;
+  group.add(muzzle);
+  const nub = extrudeShape(
+    ovalShape(length + size * .82, 0, size * .14, size * .19),
+    1.45,
+    cheek,
+    .2,
+  );
+  nub.position.z = depth - .12;
+  group.add(nub);
+
   group.userData.faceMeshes = true;
   return group;
 }

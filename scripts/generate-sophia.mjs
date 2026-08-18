@@ -118,6 +118,24 @@ for (const { part, clone, box, width, height } of layoutItems) {
   cursorX += width + gap;
   rowHeight = Math.max(rowHeight, height);
 }
+printGroup.updateMatrixWorld(true);
+const laidOutBoxes = printGroup.children.map((child) => ({
+  name: child.userData.partName,
+  box: new THREE.Box3().setFromObject(child),
+}));
+const overlappingPartPairs = [];
+for (let left = 0; left < laidOutBoxes.length; left++) {
+  for (let right = left + 1; right < laidOutBoxes.length; right++) {
+    const a = laidOutBoxes[left];
+    const b = laidOutBoxes[right];
+    const overlapX = Math.min(a.box.max.x, b.box.max.x) - Math.max(a.box.min.x, b.box.min.x);
+    const overlapY = Math.min(a.box.max.y, b.box.max.y) - Math.max(a.box.min.y, b.box.min.y);
+    if (overlapX > .01 && overlapY > .01) overlappingPartPairs.push([a.name, b.name]);
+  }
+}
+if (overlappingPartPairs.length) {
+  throw new Error(`print layout contains overlapping parts: ${JSON.stringify(overlappingPartPairs)}`);
+}
 
 let meshCount = 0;
 let vertexCount = 0;
@@ -133,16 +151,15 @@ printGroup.traverse((object) => {
   }
 });
 
-const outputDirectories = ["artifacts", "models", "public/models"].map((directory) => path.resolve(directory));
-outputDirectories.forEach((directory) => fs.mkdirSync(directory, { recursive: true }));
 const view = new STLExporter().parse(printGroup, { binary: true });
 const stl = Buffer.from(view.buffer, view.byteOffset, view.byteLength);
 const stlFilename = "sophias-four-arm-articulated-dragon-kit.stl";
-outputDirectories.forEach((directory) => fs.writeFileSync(path.join(directory, stlFilename), stl));
 
 const triangleCount = stl.readUInt32LE(80);
 const vertexIds = new Map();
 const edgeUse = new Map();
+const stlMin = [Infinity, Infinity, Infinity];
+const stlMax = [-Infinity, -Infinity, -Infinity];
 const vertexId = (x, y, z) => {
   const key = [x, y, z].map((value) => Math.round(value * 1e5)).join(",");
   if (!vertexIds.has(key)) vertexIds.set(key, vertexIds.size);
@@ -152,11 +169,16 @@ for (let triangle = 0; triangle < triangleCount; triangle++) {
   const offset = 84 + triangle * 50;
   const ids = [];
   for (let corner = 0; corner < 3; corner++) {
-    ids.push(vertexId(
+    const vertex = [
       stl.readFloatLE(offset + 12 + corner * 12),
       stl.readFloatLE(offset + 16 + corner * 12),
       stl.readFloatLE(offset + 20 + corner * 12),
-    ));
+    ];
+    vertex.forEach((value, axis) => {
+      stlMin[axis] = Math.min(stlMin[axis], value);
+      stlMax[axis] = Math.max(stlMax[axis], value);
+    });
+    ids.push(vertexId(...vertex));
   }
   [[ids[0], ids[1]], [ids[1], ids[2]], [ids[2], ids[0]]].forEach(([a, b]) => {
     const key = a < b ? `${a}:${b}` : `${b}:${a}`;
@@ -166,24 +188,46 @@ for (let triangle = 0; triangle < triangleCount; triangle++) {
 const boundaryEdges = [...edgeUse.values()].filter((count) => count === 1).length;
 const bounds = new THREE.Box3().setFromObject(printGroup);
 const dimensions = bounds.getSize(new THREE.Vector3());
+const stlDimensions = stlMax.map((value, axis) => value - stlMin[axis]);
 const report = {
   name: rig.name,
-  speciesContract: { connectedHeadJoint: true, arms: rig.arms.length, longNeckSegments: params.segments },
+  speciesContract: {
+    connectedHeadJoint: true,
+    arms: rig.arms.length,
+    longNeckSegments: params.segments,
+    faceSignature: ["open oval eye", "chunky wink", "rounded muzzle loop", "dangling nose nub"],
+  },
   params,
+  surfaceDetailMm: {
+    bodyRidge: Number((Math.max(.8, params.thickness * .3) - .12).toFixed(2)),
+    faceRelief: Number((Math.max(1, params.thickness * .33) + .81).toFixed(2)),
+  },
   printablePieces: parts.length,
   meshShells: meshCount,
   vertices: vertexCount,
   triangles: triangleCount,
   boundaryEdges,
-  printBedLayoutMm: dimensions.toArray().map((value) => Number(value.toFixed(2))),
+  overlappingPartPairs: overlappingPartPairs.length,
+  printBedLayoutMm: stlDimensions.map((value) => Number(value.toFixed(2))),
   stlBytes: stl.length,
 };
-const reportJson = `${JSON.stringify(report, null, 2)}\n`;
-outputDirectories.forEach((directory) => fs.writeFileSync(path.join(directory, "sophias-four-arm-articulated-dragon-report.json"), reportJson));
 
 if (rig.arms.length !== 4) throw new Error("species contract failed: expected exactly four arms");
 if (triangleCount < 1000) throw new Error("geometry smoke test failed: unexpectedly sparse STL");
 if (stl.length !== 84 + triangleCount * 50) throw new Error("binary STL length does not match triangle count");
 if (boundaryEdges !== 0) throw new Error(`mesh audit failed: ${boundaryEdges} open boundary edges`);
+dimensions.toArray().forEach((value, axis) => {
+  if (Math.abs(value - stlDimensions[axis]) > .02) {
+    throw new Error(`layout audit failed on axis ${axis}: scene ${value.toFixed(3)} mm vs STL ${stlDimensions[axis].toFixed(3)} mm`);
+  }
+});
+
+const outputDirectories = ["artifacts", "models", "public/models"].map((directory) => path.resolve(directory));
+const reportJson = `${JSON.stringify(report, null, 2)}\n`;
+outputDirectories.forEach((directory) => {
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(path.join(directory, stlFilename), stl);
+  fs.writeFileSync(path.join(directory, "sophias-four-arm-articulated-dragon-report.json"), reportJson);
+});
 
 console.log(JSON.stringify(report, null, 2));

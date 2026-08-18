@@ -7,8 +7,11 @@ Turn a child's drawing into an articulated, inspectable, 3D-printable creature.
 **Tested Sophia STL:**
 [download the articulated print kit](models/sophias-four-arm-articulated-dragon-kit.stl)
 
-The golden test animal is Sophia's long-necked segmented dragon—with its cute
-face, connected head, and exactly four arrow-handed arms. The governing rule:
+The golden test animal is Sophia's long-necked segmented dragon—with its
+connected head, exactly four arrow-handed arms, and the face she actually drew:
+one open oval eye, one chunky wink, a rounded muzzle loop, and a tiny dangling
+nose nub. Those marks are raised as printable relief instead of being replaced
+with a generic cartoon face. The governing rule:
 
 > Preserve the weird. A polished generic dragon that erases the child's anatomy
 > is a worse reconstruction.
@@ -31,7 +34,9 @@ on the device.
 
 The body is a chain of tapered plates arranged on alternating depth layers.
 Round eyelets overlap at each joint and printable pegs hold the stack together.
-The same mechanism attaches the head and all four arms. This is an
+The same mechanism attaches the head and all four arms. Shallow central ridges
+give the body plates height without entering the hinge sweep, while the face is
+built in stepped relief. This is an
 assemble-after-print prototype: the exported STL lays every component flat on a
 virtual 212 mm-wide layout so it retains margins on a common 220 mm bed.
 

@@ -536,6 +536,7 @@ function buildPrintLayout() {
     rowHeight = Math.max(rowHeight, height);
   });
   state.printGroup.userData.bed = { width: bedWidth, depth: cursorY + rowHeight };
+  state.printGroup.updateMatrixWorld(true);
 }
 
 function frameCreature() {
@@ -617,6 +618,7 @@ $("#camera-reset").addEventListener("click", frameCreature);
 
 $("#download-stl").addEventListener("click", () => {
   if (!state.printGroup) return;
+  state.printGroup.updateMatrixWorld(true);
   const exporter = new STLExporter();
   const dataView = exporter.parse(state.printGroup, { binary: true });
   const blob = new Blob([dataView.buffer], { type: "model/stl" });
