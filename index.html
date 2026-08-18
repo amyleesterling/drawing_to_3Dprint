@@ -96,6 +96,14 @@
             </div>
             <div id="viewer" class="viewer" aria-label="Interactive 3D model viewer">
               <div class="viewer-loading" id="viewer-loading"><span>✦</span> Waking the dragon…</div>
+              <div class="viewer-fallback" id="viewer-fallback" hidden>
+                <img id="fallback-drawing" alt="Sophia's long-necked four-arm dragon drawing" />
+                <div>
+                  <b>The dragon is built.</b>
+                  <span>This preview has 3D graphics switched off. Open it in a normal phone or computer browser for the orbitable model.</span>
+                </div>
+                <a class="button mint-button" id="fallback-stl" href="#" download>Download tested STL ↓</a>
+              </div>
               <div class="viewer-tip">DRAG TO ORBIT · PINCH TO ZOOM</div>
               <button class="viewer-reset" id="camera-reset" type="button" aria-label="Reset 3D camera">⌂</button>
             </div>

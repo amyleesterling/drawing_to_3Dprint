@@ -12,7 +12,8 @@ import {
 } from "./geometry.js";
 
 const $ = (selector) => document.querySelector(selector);
-$("#tested-stl").href = new URL("./models/sophias-four-arm-articulated-dragon-kit.stl", import.meta.url).href;
+const TESTED_STL_URL = new URL("./models/sophias-four-arm-articulated-dragon-kit.stl", import.meta.url).href;
+$("#tested-stl").href = TESTED_STL_URL;
 
 const SOPHIA_RIG = Object.freeze({
   name: "Sophia's four-armed dragon",
@@ -328,22 +329,31 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color("#17201c");
 scene.fog = new THREE.Fog("#17201c", 260, 520);
 const camera = new THREE.PerspectiveCamera(34, 1, .1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.18;
-viewer.prepend(renderer.domElement);
+let renderer = null;
+let controls = null;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
+  viewer.prepend(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = .055;
-controls.autoRotate = true;
-controls.autoRotateSpeed = .72;
-controls.minDistance = 90;
-controls.maxDistance = 430;
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = .055;
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = .72;
+  controls.minDistance = 90;
+  controls.maxDistance = 430;
+} catch {
+  $("#viewer-loading").hidden = true;
+  $("#viewer-fallback").hidden = false;
+  $("#fallback-drawing").src = SOPHIA_IMAGE;
+  $("#fallback-stl").href = TESTED_STL_URL;
+}
 
 scene.add(new THREE.HemisphereLight("#fff2da", "#07110d", 2.4));
 const keyLight = new THREE.DirectionalLight("#fff0d8", 5.8);
@@ -373,6 +383,7 @@ let creatureRoot = new THREE.Group();
 scene.add(creatureRoot);
 
 function resizeViewer() {
+  if (!renderer) return;
   const width = viewer.clientWidth;
   const height = viewer.clientHeight;
   if (!width || !height) return;
@@ -533,6 +544,7 @@ function frameCreature() {
   const sphere = box.getBoundingSphere(new THREE.Sphere());
   floor.position.y = box.min.y - 7;
   grid.position.y = floor.position.y - 2.55;
+  if (!controls) return;
   controls.target.copy(center);
   controls.target.z = 1;
   const distance = Math.max(125, sphere.radius * 2.55);
@@ -645,11 +657,11 @@ function animate() {
     const amplitude = part.userData.kind === "head" ? .055 : .16;
     part.rotation.z = part.userData.baseRotation + Math.sin(time * 2.2 + part.userData.phase) * amplitude;
   });
-  controls.update();
-  renderer.render(scene, camera);
+  controls?.update();
+  renderer?.render(scene, camera);
 }
 
 updateControlLabels();
 resizeViewer();
 loadImage(SOPHIA_IMAGE, "sophia-dragon.jpeg");
-animate();
+if (renderer) animate();

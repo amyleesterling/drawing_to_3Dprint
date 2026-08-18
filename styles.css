@@ -140,6 +140,13 @@ a { color: inherit; text-decoration: none; }
 .viewer-loading { position: absolute; inset: 0; z-index: 4; display: grid; place-content: center; gap: 12px; text-align: center; color: var(--mint); font: 800 10px ui-monospace, monospace; letter-spacing: .12em; }
 .viewer-loading span { font-size: 38px; animation: summon 1.3s infinite alternate ease-in-out; }
 @keyframes summon { to { transform: rotate(60deg) scale(1.2); } }
+.viewer-fallback { position: absolute; inset: 0; z-index: 5; padding: clamp(25px,5vw,60px); display: grid; grid-template-columns: minmax(170px,.8fr) minmax(210px,1fr); gap: 25px; align-items: center; background: radial-gradient(circle at 50% 25%,#304239,#17201c 66%); color: var(--cream); }
+.viewer-fallback[hidden] { display: none; }
+.viewer-fallback img { width: 100%; max-height: 390px; object-fit: cover; object-position: 52% 42%; border-radius: 22px; transform: rotate(-2deg); box-shadow: 0 20px 50px rgba(0,0,0,.28); }
+.viewer-fallback > div { display: grid; gap: 10px; }
+.viewer-fallback b { font: 400 clamp(28px,4vw,46px)/1 Georgia,serif; color: var(--mint); }
+.viewer-fallback span { color: rgba(245,239,227,.66); font: 15px/1.5 Georgia,serif; }
+.viewer-fallback .button { justify-self: start; grid-column: 2; }
 .viewer-tip { position: absolute; z-index: 3; bottom: 15px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.55); font: 750 8px ui-monospace, monospace; letter-spacing: .12em; white-space: nowrap; pointer-events: none; }
 .viewer-reset { position: absolute; top: 15px; right: 15px; z-index: 3; width: 35px; height: 35px; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; background: rgba(0,0,0,.18); color: white; cursor: pointer; }
 .viewer-toolbar { min-height: 66px; padding: 13px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,.1); }
@@ -187,6 +194,7 @@ footer { min-height: 72px; padding: 20px clamp(22px,5vw,78px); display: flex; ju
   .step-strip { grid-template-columns: 1fr 1fr; }.step-strip li:nth-child(2) { border-right: 0; }.step-strip li:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
   .drawing-stage, #rig-canvas { min-height: 500px; }.privacy-pill { display: none; }.species-checklist { grid-template-columns: 1fr; }
   .viewer { min-height: 500px; height: 58vh; }.viewer-toolbar { align-items: flex-start; flex-direction: column; }.viewer-actions { flex-wrap: wrap; }
+  .viewer-fallback { grid-template-columns: 1fr; align-content: center; }.viewer-fallback img { max-height: 250px; }.viewer-fallback .button { grid-column: 1; }
   .recipe-head { align-items: flex-start; flex-direction: column; }.controls-grid { grid-template-columns: 1fr; }.recipe-bottom { align-items: flex-start; flex-direction: column; }.metrics { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }.download-actions { width: 100%; justify-content: flex-start; }.download-actions .button { flex: 1 1 130px; }
   .truth-section { padding-top: 85px; padding-bottom: 85px; }.truth-grid article { grid-template-columns: 34px 1fr; }.truth-grid article p { grid-column: 2; }.roadmap { padding-top: 85px; padding-bottom: 85px; }
   footer { flex-direction: column; align-items: flex-start; line-height: 1.5; }
