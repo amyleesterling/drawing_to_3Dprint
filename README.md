@@ -5,7 +5,7 @@ Turn a child's drawing into an articulated, inspectable, 3D-printable creature.
 **Creature forge:** https://amyleesterling.github.io/drawing_to_3Dprint/
 
 **Tested Sophia STL:**
-[download the articulated print kit](public/models/sophias-four-arm-articulated-dragon-kit.stl)
+[download the articulated print kit](models/sophias-four-arm-articulated-dragon-kit.stl)
 
 The golden test animal is Sophia's long-necked segmented dragon—with its cute
 face, connected head, and exactly four arrow-handed arms. The governing rule:

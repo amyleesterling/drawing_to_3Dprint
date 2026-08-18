@@ -12,6 +12,7 @@ import {
 } from "./geometry.js";
 
 const $ = (selector) => document.querySelector(selector);
+$("#tested-stl").href = new URL("./models/sophias-four-arm-articulated-dragon-kit.stl", import.meta.url).href;
 
 const SOPHIA_RIG = Object.freeze({
   name: "Sophia's four-armed dragon",
