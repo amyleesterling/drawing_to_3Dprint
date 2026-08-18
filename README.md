@@ -1,91 +1,72 @@
 # Drawing to 3D Print
 
-Turn a child’s drawing into a faithful, inspectable, **actually printable** 3D object.
+Turn a child's drawing into an articulated, inspectable, 3D-printable creature.
 
-**Live laboratory:** https://drawing-to-3d-print.amysterling.chatgpt.site
+**Creature forge:** https://amyleesterling.github.io/drawing_to_3Dprint/
 
-The first subject is Sophia’s curled, segmented dragon: crown-like head plumes,
-arrow feet, egg stages, dragon bread, and all. The project’s governing rule:
+**Tested Sophia STL:**
+[download the articulated print kit](public/models/sophias-four-arm-articulated-dragon-kit.stl)
 
-> Preserve the weird. A prettier generic dragon that erases the child’s
-> peculiar anatomy is a worse reconstruction.
+The golden test animal is Sophia's long-necked segmented dragon—with its cute
+face, connected head, and exactly four arrow-handed arms. The governing rule:
 
-## The pipeline
+> Preserve the weird. A polished generic dragon that erases the child's anatomy
+> is a worse reconstruction.
 
-```text
-drawing + intent
-      ↓
-clean / segment / describe
-      ↓
-AI mesh candidates OR parametric generator
-      ↓
-normalize / repair / thicken / manifold union
-      ↓
-printability report + slicer acceptance test
-      ↓
-3MF print master + GLB browser preview + STL compatibility
+## What works now
+
+The GitHub Pages laboratory runs entirely in the browser:
+
+1. Upload a drawing or restore the Sophia preset.
+2. Drag the spine, head, and four hand markers over the intended anatomy.
+3. Generate an assembled articulated preview.
+4. Adjust segment count, plate thickness, clearance, and finished size.
+5. Orbit, zoom, wiggle, explode, recolor, and inspect the geometry.
+6. Download a laid-out binary STL print kit, clean SVG sketch, and JSON recipe.
+
+No account, server, API key, or uploaded child artwork is required. Images stay
+on the device.
+
+## The articulation system
+
+The body is a chain of tapered plates arranged on alternating depth layers.
+Round eyelets overlap at each joint and printable pegs hold the stack together.
+The same mechanism attaches the head and all four arms. This is an
+assemble-after-print prototype: the exported STL lays every component flat on a
+virtual 212 mm-wide layout so it retains margins on a common 220 mm bed.
+
+Read [docs/ARTICULATION.md](docs/ARTICULATION.md) for the joint geometry,
+defaults, and calibration boundary.
+
+## Run locally
+
+```bash
+npm install
+npm run dev
 ```
 
-AI may propose the hidden backside. It may not certify its own geometry.
+`npm run build` creates a static `dist/` directory. GitHub Actions deploys that
+directory to Pages after changes land on `main`.
 
-## Recommended model strategy
+## Honest boundary
+
+This version does deterministic, human-guided geometry. It does not pretend a
+static webpage can secretly run a 4-billion-parameter reconstruction model.
+Open image-to-3D adapters can propose richer surfaces later; the explicit rig,
+joint clearances, print layout, and validation contract remain model-independent.
+
+## Open model strategy
 
 - **Default:** [TripoSG-Scribble](https://github.com/VAST-AI-Research/TripoSG)
-  — scribble + prompt → GLB; MIT code/weights; about 8 GB VRAM.
-- **High-fidelity challenger:** [Pixal3D](https://github.com/TencentARC/Pixal3D)
-  — pixel-aligned single-image reconstruction; MIT; 24 GB-class backend.
-- **Print-first challenger:** [Step1X-3D](https://github.com/stepfun-ai/Step1X-3D)
-  — watertight-TSDF geometry; Apache-2.0; heavyweight.
-- **Quality ceiling:** [TRELLIS.2](https://github.com/microsoft/TRELLIS.2)
-  — 4B image-to-3D with PBR materials; MIT; 24 GB+ VRAM.
-- **Geometry benchmark:** [Direct3D-S2](https://github.com/DreamTechAI/Direct3D-S2)
-  — high-resolution SDF mesh generation; MIT; 10–24 GB VRAM.
-- **Fast smoke test:** [TripoSR](https://github.com/VAST-AI-Research/TripoSR)
-  — permissive 6 GB baseline.
+  for scribble + prompt → mesh.
+- **High-fidelity challenger:** [Pixal3D](https://github.com/TencentARC/Pixal3D).
+- **Print-first challenger:** [Step1X-3D](https://github.com/stepfun-ai/Step1X-3D).
+- **Quality ceiling:** [TRELLIS.2](https://github.com/microsoft/TRELLIS.2).
+- **Fast baseline:** [TripoSR](https://github.com/VAST-AI-Research/TripoSR).
 
-See [docs/MODEL_LANDSCAPE.md](docs/MODEL_LANDSCAPE.md) for the researched
-comparison and licensing cautions.
+See [docs/MODEL_LANDSCAPE.md](docs/MODEL_LANDSCAPE.md) and
+[docs/PIPELINE.md](docs/PIPELINE.md) for the researched comparison and complete
+drawing-to-object contract.
 
-## Planned repository shape
-
-```text
-apps/web/                 browser viewer and job UI
-pipeline/                 ingest, repair, validate, export, slice
-adapters/                 one isolated adapter per generation model
-generators/               deliberate parametric models
-profiles/                 printer / nozzle / material rules
-schemas/                  job and validation report contracts
-assets/examples/          source drawings and small test fixtures
-artifacts/                generated GLB / 3MF / STL / reports (gitignored)
-weights/                  model caches (gitignored)
-tests/                    fixtures, golden meshes, pipeline checks
-```
-
-## Printability contract
-
-Every generated object must report:
-
-- finite vertices and nondegenerate faces;
-- watertightness, winding consistency, outward normals, and positive volume;
-- connected-body count and floating islands;
-- dimensions and explicit millimeter units;
-- minimum feature/wall thickness;
-- overhang area and bed-contact area;
-- slicer success, support requirement, estimated material, and print time.
-
-**3MF is the print master. GLB is the browser preview. STL is compatibility-only.**
-
-## First experiment
-
-1. Crop and clean one dragon from Sophia’s model sheet.
-2. Run TripoSG-Scribble with a species-preserving prompt.
-3. Generate 4–8 candidates.
-4. Compare silhouette and peculiar anatomical features.
-5. Repair the best candidate with Trimesh + Manifold3D; use Blender voxel
-   remesh only when necessary.
-6. Validate it, slice it, and put the GLB beside the deterministic baseline in
-   the browser viewer.
-
-This repository intentionally does **not** commit model weights. Adapters will
-fetch pinned upstream weights into a gitignored cache and preserve every
-upstream license and NOTICE file.
+Model weights are never committed. Future adapters will fetch pinned upstream
+artifacts into a gitignored cache and preserve every license and NOTICE file.

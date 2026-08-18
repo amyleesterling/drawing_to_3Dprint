@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#14211c" />
+    <meta
+      name="description"
+      content="Turn a drawing into an articulated, printable 3D creature—entirely in your browser."
+    />
+    <title>Drawing to 3D Print · Articulated Creature Lab</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Drawing to 3D Print home">
+        <span class="brand-cube" aria-hidden="true">D→3D</span>
+        <span>Drawing to 3D Print</span>
+      </a>
+      <div class="header-status"><span></span> LOCAL-FIRST · NO API KEY</div>
+      <a class="github-link" href="https://github.com/amyleesterling/drawing_to_3Dprint" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">THE IMPROBABLE ZOOLOGY WORKSHOP</p>
+          <h1>Draw a beast.<br /><em>Give it joints.</em></h1>
+          <p class="hero-lede">
+            A browser laboratory for turning a child’s drawing into an articulated
+            3D-printable creature—without sanding away the glorious weirdness.
+          </p>
+        </div>
+        <div class="hero-creature" aria-hidden="true">
+          <div class="neck neck-one"></div><div class="neck neck-two"></div><div class="neck neck-three"></div>
+          <div class="hero-head"><i></i><i></i><b>⌣</b></div>
+          <span class="hero-arm arm-a">✦</span><span class="hero-arm arm-b">✦</span>
+          <span class="hero-arm arm-c">✦</span><span class="hero-arm arm-d">✦</span>
+        </div>
+      </section>
+
+      <section class="lab" aria-labelledby="lab-title">
+        <div class="lab-heading">
+          <div>
+            <p class="eyebrow coral">ARTIFACT 001 · SOPHIA’S DRAGON</p>
+            <h2 id="lab-title">The creature forge</h2>
+          </div>
+          <p>
+            The mint bones are the rig. Drag them over the drawing, then regenerate.
+            The orange model is an assemble-after-print hinge kit with real clearances.
+          </p>
+        </div>
+
+        <ol class="step-strip" aria-label="Creature-making steps">
+          <li class="active"><b>1</b><span>Drawing</span></li>
+          <li class="active"><b>2</b><span>Body plan</span></li>
+          <li class="active"><b>3</b><span>3D joints</span></li>
+          <li><b>4</b><span>Print kit</span></li>
+        </ol>
+
+        <div class="workbench">
+          <section class="drawing-panel panel">
+            <div class="panel-title">
+              <div><span>01</span><h3>Trace the creature</h3></div>
+              <span class="privacy-pill">Image stays on device</span>
+            </div>
+            <div class="drawing-stage">
+              <canvas id="rig-canvas" width="800" height="1000" aria-label="Drawing with draggable articulation rig"></canvas>
+              <div class="canvas-help">DRAG MINT JOINTS · CORAL DOTS ARE HANDS</div>
+            </div>
+            <div class="drawing-actions">
+              <label class="button dark" for="image-upload">Choose drawing</label>
+              <input id="image-upload" type="file" accept="image/*" hidden />
+              <button class="button ghost" id="sample-button" type="button">Sophia preset</button>
+              <button class="button ghost" id="reset-rig" type="button">Reset bones</button>
+              <button class="button ghost" id="download-sketch" type="button">Sketch SVG ↓</button>
+            </div>
+            <div class="species-checklist">
+              <span>✓ long curled neck</span><span>✓ connected head</span><span>✓ cute face</span><span>✓ four arms</span>
+            </div>
+          </section>
+
+          <section class="viewer-panel panel">
+            <div class="panel-title viewer-title">
+              <div><span>02</span><h3>Inspect the model</h3></div>
+              <div class="live-pill"><i></i> LIVE GEOMETRY</div>
+            </div>
+            <div id="viewer" class="viewer" aria-label="Interactive 3D model viewer">
+              <div class="viewer-loading" id="viewer-loading"><span>✦</span> Waking the dragon…</div>
+              <div class="viewer-tip">DRAG TO ORBIT · PINCH TO ZOOM</div>
+              <button class="viewer-reset" id="camera-reset" type="button" aria-label="Reset 3D camera">⌂</button>
+            </div>
+            <div class="viewer-toolbar">
+              <div class="swatches" aria-label="Model color">
+                <button class="swatch active" data-color="#ff784f" style="--swatch:#ff784f" aria-label="Coral"></button>
+                <button class="swatch" data-color="#69d6c4" style="--swatch:#69d6c4" aria-label="Mint"></button>
+                <button class="swatch" data-color="#f0c95b" style="--swatch:#f0c95b" aria-label="Gold"></button>
+                <button class="swatch" data-color="#a98cff" style="--swatch:#a98cff" aria-label="Violet"></button>
+              </div>
+              <div class="viewer-actions">
+                <button id="wiggle-button" type="button">Wiggle</button>
+                <button id="explode-button" type="button">Explode</button>
+                <button id="wireframe-button" type="button">Wireframe</button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="recipe-panel panel">
+          <div class="recipe-head">
+            <div><span>03</span><h3>Print recipe</h3></div>
+            <p>Every value is millimeters. The first kit is designed for a 0.4 mm nozzle and assemble-after-print hinges.</p>
+          </div>
+          <div class="controls-grid">
+            <label><span>Body segments <output id="segments-value">10</output></span><input id="segments" type="range" min="6" max="14" value="10" /></label>
+            <label><span>Plate thickness <output id="thickness-value">3.2 mm</output></span><input id="thickness" type="range" min="2.4" max="5" value="3.2" step="0.2" /></label>
+            <label><span>Joint clearance <output id="clearance-value">0.35 mm</output></span><input id="clearance" type="range" min="0.2" max="0.65" value="0.35" step="0.05" /></label>
+            <label><span>Creature size <output id="size-value">140 mm</output></span><input id="creature-size" type="range" min="90" max="190" value="140" step="5" /></label>
+          </div>
+          <div class="recipe-bottom">
+            <dl class="metrics">
+              <div><dt>PARTS</dt><dd id="parts-metric">15</dd></div>
+              <div><dt>JOINTS</dt><dd id="joints-metric">14</dd></div>
+              <div><dt>ARMS</dt><dd>4</dd></div>
+              <div><dt>FORMAT</dt><dd>STL + SVG + JSON</dd></div>
+            </dl>
+            <div class="download-actions">
+              <button class="button coral-button" id="generate-button" type="button">Regenerate 3D</button>
+              <button class="button mint-button" id="download-stl" type="button">Download print kit ↓</button>
+              <a class="button dark" href="./models/sophias-four-arm-articulated-dragon-kit.stl" download>Tested Sophia STL</a>
+              <button class="button ghost" id="download-recipe" type="button">Save recipe</button>
+            </div>
+          </div>
+          <p class="assembly-note"><b>Assembly:</b> join the alternating body plates and four arms with the included printable pegs, or use short pieces of 1.75 mm filament. Small parts require adult supervision.</p>
+        </div>
+      </section>
+
+      <section class="truth-section">
+        <div class="truth-intro">
+          <p class="eyebrow">WHAT THIS VERSION ACTUALLY DOES</p>
+          <h2>No smoke.<br /><em>A very small mirror.</em></h2>
+          <p>The browser does deterministic geometry today. Open image-to-3D models can propose richer surfaces tomorrow, but the joint plan and print contract remain ours.</p>
+        </div>
+        <div class="truth-grid">
+          <article><span>01</span><h3>Image in</h3><p>Upload any drawing. Nothing is sent to a server. A draggable body rig keeps the child—not a mystery model—in charge of anatomy.</p></article>
+          <article><span>02</span><h3>Mechanics in the open</h3><p>Body plates alternate in depth around pin hinges. Head and all four arms are mechanically attached, not hovering nearby on a spiritual journey.</p></article>
+          <article><span>03</span><h3>Printable out</h3><p>The export lays every plate, arm, head, and peg flat on a virtual print bed and produces one STL plus a reproducible JSON recipe.</p></article>
+        </div>
+      </section>
+
+      <section class="roadmap">
+        <p class="eyebrow coral">NEXT: THE OPEN MODEL ADAPTERS</p>
+        <h2>Same bones. Wilder skin.</h2>
+        <p>TripoSG-Scribble, Pixal3D, and Step1X can become optional geometry proposers. The rig, joint clearances, repair stage, and printable output stay model-independent.</p>
+        <div class="roadmap-links">
+          <a href="https://github.com/VAST-AI-Research/TripoSG" target="_blank" rel="noreferrer">TripoSG-Scribble ↗</a>
+          <a href="https://github.com/TencentARC/Pixal3D" target="_blank" rel="noreferrer">Pixal3D ↗</a>
+          <a href="https://github.com/stepfun-ai/Step1X-3D" target="_blank" rel="noreferrer">Step1X-3D ↗</a>
+        </div>
+      </section>
+    </main>
+
+    <footer><span>DRAWING → BONES → JOINTS → PRINT</span><span>Preserve the weird.</span></footer>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "drawing-to-3d-print",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "check": "node --check app.js && node scripts/generate-sophia.mjs"
+  },
+  "dependencies": {
+    "three": "0.185.0"
+  },
+  "devDependencies": {
+    "vite": "8.0.0"
+  }
+}
