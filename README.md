@@ -50,8 +50,9 @@ npm install
 npm run dev
 ```
 
-`npm run build` creates a static `dist/` directory. GitHub Actions deploys that
-directory to Pages after changes land on `main`.
+`npm run build` creates and verifies a production `dist/` bundle. GitHub Pages
+serves the repository root from `main`, which keeps the hand-authored module
+paths and downloadable model URLs stable.
 
 ## Honest boundary
 
