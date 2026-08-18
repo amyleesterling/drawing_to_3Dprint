@@ -133,14 +133,37 @@ printGroup.traverse((object) => {
   }
 });
 
-const outputDirectory = path.resolve("artifacts");
-fs.mkdirSync(outputDirectory, { recursive: true });
+const outputDirectories = ["artifacts", "models", "public/models"].map((directory) => path.resolve(directory));
+outputDirectories.forEach((directory) => fs.mkdirSync(directory, { recursive: true }));
 const view = new STLExporter().parse(printGroup, { binary: true });
 const stl = Buffer.from(view.buffer, view.byteOffset, view.byteLength);
-const stlPath = path.join(outputDirectory, "sophias-four-arm-articulated-dragon-kit.stl");
-fs.writeFileSync(stlPath, stl);
+const stlFilename = "sophias-four-arm-articulated-dragon-kit.stl";
+outputDirectories.forEach((directory) => fs.writeFileSync(path.join(directory, stlFilename), stl));
 
 const triangleCount = stl.readUInt32LE(80);
+const vertexIds = new Map();
+const edgeUse = new Map();
+const vertexId = (x, y, z) => {
+  const key = [x, y, z].map((value) => Math.round(value * 1e5)).join(",");
+  if (!vertexIds.has(key)) vertexIds.set(key, vertexIds.size);
+  return vertexIds.get(key);
+};
+for (let triangle = 0; triangle < triangleCount; triangle++) {
+  const offset = 84 + triangle * 50;
+  const ids = [];
+  for (let corner = 0; corner < 3; corner++) {
+    ids.push(vertexId(
+      stl.readFloatLE(offset + 12 + corner * 12),
+      stl.readFloatLE(offset + 16 + corner * 12),
+      stl.readFloatLE(offset + 20 + corner * 12),
+    ));
+  }
+  [[ids[0], ids[1]], [ids[1], ids[2]], [ids[2], ids[0]]].forEach(([a, b]) => {
+    const key = a < b ? `${a}:${b}` : `${b}:${a}`;
+    edgeUse.set(key, (edgeUse.get(key) || 0) + 1);
+  });
+}
+const boundaryEdges = [...edgeUse.values()].filter((count) => count === 1).length;
 const bounds = new THREE.Box3().setFromObject(printGroup);
 const dimensions = bounds.getSize(new THREE.Vector3());
 const report = {
@@ -151,13 +174,16 @@ const report = {
   meshShells: meshCount,
   vertices: vertexCount,
   triangles: triangleCount,
+  boundaryEdges,
   printBedLayoutMm: dimensions.toArray().map((value) => Number(value.toFixed(2))),
   stlBytes: stl.length,
 };
-fs.writeFileSync(path.join(outputDirectory, "sophias-four-arm-articulated-dragon-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+const reportJson = `${JSON.stringify(report, null, 2)}\n`;
+outputDirectories.forEach((directory) => fs.writeFileSync(path.join(directory, "sophias-four-arm-articulated-dragon-report.json"), reportJson));
 
 if (rig.arms.length !== 4) throw new Error("species contract failed: expected exactly four arms");
 if (triangleCount < 1000) throw new Error("geometry smoke test failed: unexpectedly sparse STL");
 if (stl.length !== 84 + triangleCount * 50) throw new Error("binary STL length does not match triangle count");
+if (boundaryEdges !== 0) throw new Error(`mesh audit failed: ${boundaryEdges} open boundary edges`);
 
 console.log(JSON.stringify(report, null, 2));

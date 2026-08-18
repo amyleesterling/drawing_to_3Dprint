@@ -97,12 +97,29 @@ export function makeHeadPart(length, depth, holeRadius, size, material, crownMat
   nose.scale.set(1.25, 1, .82);
   nose.position.set(length + size * .56, 0, depth + .45);
   group.add(nose);
-  const smileCurve = new THREE.QuadraticBezierCurve3(
-    new THREE.Vector3(length + size * .38, -size * .31, depth + .72),
-    new THREE.Vector3(length + size * .65, 0, depth + 1.05),
-    new THREE.Vector3(length + size * .38, size * .31, depth + .72),
-  );
-  group.add(new THREE.Mesh(new THREE.TubeGeometry(smileCurve, 12, .68, 6, false), dark));
+  const smile = new THREE.Shape();
+  const smilePoints = [];
+  const smileHalfHeight = size * .31;
+  const smileArch = size * .27;
+  const smileThickness = Math.max(.7, size * .042);
+  for (let index = 0; index <= 12; index++) {
+    const y = THREE.MathUtils.lerp(-smileHalfHeight, smileHalfHeight, index / 12);
+    const normalized = y / smileHalfHeight;
+    const x = length + size * .38 + smileArch * (1 - normalized * normalized);
+    smilePoints.push(new THREE.Vector2(x + smileThickness / 2, y));
+  }
+  for (let index = 12; index >= 0; index--) {
+    const y = THREE.MathUtils.lerp(-smileHalfHeight, smileHalfHeight, index / 12);
+    const normalized = y / smileHalfHeight;
+    const x = length + size * .38 + smileArch * (1 - normalized * normalized);
+    smilePoints.push(new THREE.Vector2(x - smileThickness / 2, y));
+  }
+  smile.moveTo(smilePoints[0].x, smilePoints[0].y);
+  smilePoints.slice(1).forEach((point) => smile.lineTo(point.x, point.y));
+  smile.closePath();
+  const smileMesh = extrudeShape(smile, .9, dark, .12);
+  smileMesh.position.z = depth - .18;
+  group.add(smileMesh);
   [-.42, 0, .42].forEach((factor, index) => {
     const crown = makeHandPart(depth * .72, crownMaterial);
     crown.scale.set(.34, .34, .7);

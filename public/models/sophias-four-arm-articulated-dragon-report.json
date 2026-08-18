@@ -14,12 +14,13 @@
   },
   "printablePieces": 25,
   "meshShells": 58,
-  "vertices": 29307,
-  "triangles": 11176,
+  "vertices": 29828,
+  "triangles": 11236,
+  "boundaryEdges": 0,
   "printBedLayoutMm": [
     211.67,
     198.21,
     17.09
   ],
-  "stlBytes": 558884
+  "stlBytes": 561884
 }
